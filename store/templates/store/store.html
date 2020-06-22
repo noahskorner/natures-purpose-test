@@ -6,7 +6,7 @@
         {% for product in products %}
         <div class="col-lg-4">
             <div class="box-element product">
-                <img src="{% static 'img/placeholder.png' %}" alt="" class="thumbnail">
+                <img src="{{product.imageURL}}" alt="" class="thumbnail">
                 <h6><strong>{{product.name}}</strong></h6>
                 <hr>
                 <button class="btn btn-outline-secondary add-btn">Add to Cart</button>
