@@ -15,7 +15,7 @@ def store(request):
     else:
         #placeholder empty list
         items = []
-        order = {'get_cart_total':0, 'get_cart_items':0}
+        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
         cartItems = order['get_cart_items']
 
     #prep the data to render
@@ -34,7 +34,7 @@ def cart(request):
     else:
         #placeholder empty list
         items = []
-        order = {'get_cart_total':0, 'get_cart_items':0}
+        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
         cartItems = order['get_cart_items']
 
     context = {'items':items, 'order':order, 'cartItems':cartItems}
@@ -51,7 +51,7 @@ def checkout(request):
     else:
         #placeholder empty list
         items = []
-        order = {'get_cart_total':0, 'get_cart_items':0}
+        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
         cartItems = order['get_cart_items']
 
     context = {'items':items, 'order':order, 'cartItems':cartItems}
