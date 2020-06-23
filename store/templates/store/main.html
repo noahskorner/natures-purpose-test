@@ -5,6 +5,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--Check if user is logged in or guest user-->
+    <script type="text/javascript">
+      //get User type 
+      var user = '{{request.user}}'
+
+      //get CSRF Token
+      function getToken(name){
+        var cookieValue = null;
+        if(document.cookie && document.cookie !== ''){
+          var cookies = document.cookie.split(';');
+          for(var i = 0; i  < cookies.length; i++){
+            var cookie = cookies[i].trim();
+            //Does this cookie string begin with the name we want?
+            if(cookie.substring(0, name.length + 1) == (name + '=')){
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      //store CSRF token
+      var csrftoken = getToken('csrftoken');
+      </script>
     <!--link Bootstrap CSS only -->
     <link
       rel="stylesheet"
@@ -47,7 +72,7 @@
             <a href="{% url 'cart' %}">
                 <img id="cart-icon" src="{% static 'img/cart.png' %}">
             </a>
-            <p id="cart-total">0</p>
+            <p id="cart-total">{{cartItems}}</p>
         </div>
       </div>
     </nav>
@@ -71,5 +96,8 @@
       integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
       crossorigin="anonymous"
     ></script>
+
+    <!--Import Custom JS files-->
+    <script type="text/javascript" src="{% static 'js/cart.js' %}"></script>
   </body>
 </html>
