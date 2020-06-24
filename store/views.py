@@ -3,60 +3,67 @@ from .models import *
 from django.http import JsonResponse
 import json
 import datetime
+from .utils import cookieCart
 
 # Create your views here.
 def store(request):
     if request.user.is_authenticated:
         customer = request.user.customer
-        #query object or create one (try-catch style)
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        #get all the orderItems with order as a parent
+        # query object or create one (try-catch style)
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
+        # get all the orderItems with order as a parent
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
-        #placeholder empty list
-        items = []
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
+        cookieData = cookieCart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
 
-    #prep the data to render
+    # prep the data to render
     products = Product.objects.all()
-    context = {'products':products, 'cartItems':cartItems}
+    context = {'products': products, 'cartItems': cartItems}
     return render(request, 'store/store.html', context)
+
 
 def cart(request):
     if request.user.is_authenticated:
         customer = request.user.customer
-        #query object or create one (try-catch style)
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        #get all the orderItems with order as a parent
+        # query object or create one (try-catch style)
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
+        # get all the orderItems with order as a parent
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
-        #placeholder empty list
-        items = []
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
+        cookieData = cookieCart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
 
-    context = {'items':items, 'order':order, 'cartItems':cartItems}
+    context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'store/cart.html', context)
+
 
 def checkout(request):
     if request.user.is_authenticated:
         customer = request.user.customer
-        #query object or create one (try-catch style)
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
-        #get all the orderItems with order as a parent
+        # query object or create one (try-catch style)
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
+        # get all the orderItems with order as a parent
         items = order.orderitem_set.all()
         cartItems = order.get_cart_items
     else:
-        #placeholder empty list
-        items = []
-        order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
-        cartItems = order['get_cart_items']
+        cookieData = cookieCart(request)
+        cartItems = cookieData['cartItems']
+        order = cookieData['order']
+        items = cookieData['items']
 
-    context = {'items':items, 'order':order, 'cartItems':cartItems}
+    context = {'items': items, 'order': order, 'cartItems': cartItems}
     return render(request, 'store/checkout.html', context)
+
 
 def updateItem(request):
     data = json.loads(request.body)
@@ -66,12 +73,14 @@ def updateItem(request):
     print('Action: ', action)
     print('ProductId: ', productId)
 
-    customer = request.user.customer 
+    customer = request.user.customer
     product = Product.objects.get(id=productId)
-    order, created = Order.objects.get_or_create(customer=customer, complete=False)
+    order, created = Order.objects.get_or_create(
+        customer=customer, complete=False)
 
-    #if the item already exists then we don't need to create a new order, just add one
-    orderItem, created = OrderItem.objects.get_or_create(order=order, product=product)
+    # if the item already exists then we don't need to create a new order, just add one
+    orderItem, created = OrderItem.objects.get_or_create(
+        order=order, product=product)
 
     if action == 'add':
         orderItem.quantity = (orderItem.quantity + 1)
@@ -85,33 +94,34 @@ def updateItem(request):
 
     return JsonResponse('Item was added', safe=False)
 
+
 def processOrder(request):
     transaction_id = datetime.datetime.now().timestamp
     data = json.loads(request.body)
 
-    #process the order for a logged in user
+    # process the order for a logged in user
     if request.user.is_authenticated:
         customer = request.user.customer
-        order, created = Order.objects.get_or_create(customer=customer, complete=False)
+        order, created = Order.objects.get_or_create(
+            customer=customer, complete=False)
         total = float(data['form']['total'])
         order.transaction_id = transaction_id
-        
-        #security check
+
+        # security check
         if total == order.get_cart_total:
             order.complete = True
         order.save()
 
         if order.shipping == True:
             ShippingAddress.objects.create(
-                customer = customer,
-                order = order,
-                address = data['shipping']['address'],
-                city = data['shipping']['city'],
-                state = data['shipping']['state'],
-                zipcode = data['shipping']['zipcode'],
+                customer=customer,
+                order=order,
+                address=data['shipping']['address'],
+                city=data['shipping']['city'],
+                state=data['shipping']['state'],
+                zipcode=data['shipping']['zipcode'],
             )
-    #process the order for a guest user
+    # process the order for a guest user
     else:
         print('User is not logged in...')
     return JsonResponse('Payment complete', safe=False)
-
